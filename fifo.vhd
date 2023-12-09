@@ -51,7 +51,7 @@ architecture Behavioral of fifo is
 -- encoding style and will make the code more readable.
 --Insert the following in the architecture before the begin keyword
    --Use descriptive names for the states, like st1_reset, st2_search
-   type state_type is (st1_start, st2_idle, st3_push, st4_push_full, st5_pop, st6_pop_empty); 
+   type state_type is (st1_start, st2_idle, st3_push, st4_push_full, st5_pop, st6_pop_empty, st7_add_add, st8_sub_add, st9_set_empty, st10_set_full); 
    signal state, next_state : state_type; 
    --Declare internal signals for all outputs of the state-machine
 	signal empty_out_i     : std_logic := '0';
