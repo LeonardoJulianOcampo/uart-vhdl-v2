@@ -77,7 +77,7 @@ architecture Behavioral of fifo is
             add_out     <= '0';
 				sub_out     <= '0';
 				rst_cnt_out <= '1';
-				state_out   <= "000";
+				state_out   <= "0000";
          else
             state       <= next_state;
             add_out     <= add_out_i;
@@ -93,7 +93,7 @@ architecture Behavioral of fifo is
    end process;
  
    --MOORE State-Machine - Outputs based on state only
-   OUTPUT_DECODE: process (state)
+   OUTPUT_DECODE: process (state, empty_out_i, full_out_i)
    begin
       --insert statements to decode internal output signals
       --below is simple example
@@ -104,8 +104,7 @@ architecture Behavioral of fifo is
 			sub_out_i      <= '0';
 			rst_cnt_out_i  <= '1';
 			write_ena_i    <= '0';
-			state_out_i    <= "000";
-			rst_cnt_out_i  <= '1';
+			state_out_i    <= "0000";
 		elsif state = st2_idle then
 			empty_out_i    <= '0';
 			full_out_i     <= '0';
@@ -113,44 +112,71 @@ architecture Behavioral of fifo is
 			sub_out_i      <= '0';
 			rst_cnt_out_i  <= '0';
 			write_ena_i    <= '0';
-			state_out_i    <= "001";
-			rst_cnt_out_i  <= '0';
+			state_out_i    <= "0001";
       elsif state = st3_push then
 			empty_out_i    <= '0';
 			full_out_i     <= '0';
-			add_out_i      <= '1';
+			add_out_i      <= '0';
 			sub_out_i      <= '0';
 			rst_cnt_out_i  <= '0';
 			write_ena_i    <= '1';
-			state_out_i    <= "010";
-			rst_cnt_out_i  <= '0';
+			state_out_i    <= "0010";
 		elsif state = st4_push_full then
 			empty_out_i    <= '0';
-			full_out_i     <= '1';
-			add_out_i      <= '1';
+			full_out_i     <= '0';
+			add_out_i      <= '0';
 			sub_out_i      <= '0';
 			rst_cnt_out_i  <= '0';
 			write_ena_i    <= '1';
-			state_out_i    <= "011";
-			rst_cnt_out_i  <= '0';
+			state_out_i    <= "0011";
       elsif state = st5_pop then
 			empty_out_i    <= '0';
 			full_out_i     <= '0';
 			add_out_i      <= '0';
 			write_ena_i    <= '1';
-			sub_out_i      <= '1';
+			sub_out_i      <= '0';
 			rst_cnt_out_i  <= '0';
-			state_out_i    <= "100";
-			rst_cnt_out_i  <= '0';
+			state_out_i    <= "0100";
 		elsif state = st6_pop_empty then
 			empty_out_i    <= '0';
 			full_out_i     <= '0';
 			add_out_i      <= '0';
 			write_ena_i    <= '1';
+			sub_out_i      <= '0';
+			rst_cnt_out_i  <= '0';
+			state_out_i    <= "0101";
+		elsif state = st7_add_add then
+			empty_out_i    <= '0';
+			full_out_i     <= '0';
+			add_out_i      <= '1';
+			write_ena_i    <= '0';
+			sub_out_i      <= '0';
+			rst_cnt_out_i  <= '0';
+			state_out_i    <= "0110";
+		elsif state = st8_sub_add then
+			empty_out_i    <= '0';
+			full_out_i     <= '0';
+			add_out_i      <= '0';
+			write_ena_i    <= '0';
 			sub_out_i      <= '1';
 			rst_cnt_out_i  <= '0';
-			state_out_i    <= "101";
+			state_out_i    <= "0111";
+		elsif state = st9_set_empty then
+			empty_out_i    <= '1';
+			full_out_i     <= '0';
+			add_out_i      <= '0';
+			write_ena_i    <= '0';
+			sub_out_i      <= '0';
 			rst_cnt_out_i  <= '0';
+			state_out_i    <= "1000";
+		elsif state = st10_set_full then
+			empty_out_i    <= '0';
+			full_out_i     <= '1';
+			add_out_i      <= '0';
+			write_ena_i    <= '0';
+			sub_out_i      <= '0';
+			rst_cnt_out_i  <= '0';
+			state_out_i    <= "1001";
       else
          empty_out_i    <= '0';
 			full_out_i     <= '0';
@@ -158,8 +184,7 @@ architecture Behavioral of fifo is
 			write_ena_i    <= '0';
 			sub_out_i      <= '0';
 			rst_cnt_out_i  <= '0';
-			state_out_i    <= "111";
-			rst_cnt_out_i  <= '0';
+			state_out_i    <= "1111";   -- estado no establecido. Si cae aca algo anda mal 
       end if;
    end process;
  
@@ -177,14 +202,14 @@ architecture Behavioral of fifo is
 				else 
 					next_state <= st1_start;
             end if;
-         when st2_idle => 
-            if push_in = '1' and (counter_in < "111") then
+         when st2_idle =>  
+            if push_in = '1' and (counter_in < "111")    then
                next_state <= st3_push;
             elsif push_in = '1' and (counter_in = "111") then
                next_state <= st4_push_full;
-            elsif pop_in = '1' and (counter_in > "000") then
+            elsif pop_in = '1' and (counter_in > "000")  then
                next_state <= st5_pop;
-            elsif pop_in = '1' and (counter_in = "000") then
+            elsif pop_in = '1' and (counter_in = "000")  then
                next_state <= st6_pop_empty;
 				else
 					next_state <= st2_idle;
@@ -193,13 +218,25 @@ architecture Behavioral of fifo is
 					next_state <= st2_idle;
 				
 			when st4_push_full =>
-					next_state <= st2_idle;
+					next_state <= st10_set_full;
 				
 			when st5_pop =>
-					next_state <= st2_idle;
+					next_state <= st8_sub_add;
 				
 			when st6_pop_empty =>
-					next_state <= st1_start;
+					next_state <= st9_set_empty;
+					
+			when st7_add_add =>
+					next_state <= st2_idle;
+			
+			when st8_sub_add =>
+					next_state <= st2_idle;
+					
+			when st9_set_empty =>
+					next_state <= st2_idle;
+			
+			when st10_set_full =>
+					next_state <= st2_idle;
 				
          when others =>
             next_state <= st2_idle;
