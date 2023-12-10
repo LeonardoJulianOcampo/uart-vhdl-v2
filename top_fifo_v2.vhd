@@ -33,6 +33,7 @@ entity top_fifo_v2 is
 	 generic(N : integer := 3;
 				M : integer := 8);
     Port ( clk      : in   STD_LOGIC;
+			  clk_fsm  : in   STD_LOGIC;
            push     : in   STD_LOGIC;
            pop      : in   STD_LOGIC;
            init     : in   STD_LOGIC;
@@ -50,7 +51,11 @@ architecture Behavioral of top_fifo_v2 is
 	signal reset_cnt_s    : std_logic;
 	signal full_s         : std_logic;
 	signal empty_s        : std_logic;
-	signal state_s        : std_logic_vector(N-1 downto 0);	
+	signal state_s        : std_logic_vector(N downto 0);
+	signal max_s          : std_logic;
+	signal min_s          : std_logic;
+	signal pop_and_out_s  : std_logic;
+	signal push_and_out_s : std_logic;
 	
 	component fifo is
     Port ( push_in     : in   STD_LOGIC;
@@ -61,7 +66,7 @@ architecture Behavioral of top_fifo_v2 is
            full_out    : out  STD_LOGIC;
            empty_out   : out  STD_LOGIC;
 			  write_ena   : out  STD_LOGIC;
-			  state_out   : out  std_logic_vector (2 downto 0);
+			  state_out   : out  std_logic_vector (3 downto 0);
 			  add_out     : out  std_logic;
 			  sub_out     : out  std_logic;
 			  rst_cnt_out : out  std_logic);
@@ -79,18 +84,22 @@ architecture Behavioral of top_fifo_v2 is
     END COMPONENT;
 	
 	component updown_counter is
-    Port ( up    : in  STD_LOGIC;
-           down  : in  STD_LOGIC;
-           clk   : in  STD_LOGIC;
-           reset : in  STD_LOGIC;
-           count : out  STD_LOGIC_VECTOR (2 downto 0));
-    end component updown_counter;
+		 Port ( up    : in   STD_LOGIC;
+				  down  : in   STD_LOGIC;
+				  clk   : in   STD_LOGIC;
+				  reset : in   STD_LOGIC;
+				  count : out  STD_LOGIC_VECTOR (2 downto 0);
+				  max   : out  STD_LOGIC;
+				  min   : out  STD_LOGIC);
+	end component;
 	
 begin
+
+
 	
-	logic: fifo        				port map(push,
-														pop,
-														clk,
+	logic: fifo        				port map(push_and_out_s,
+														pop_and_out_s,
+														clk_fsm,
 														reset,
 														counter,
 														full_s,
@@ -105,7 +114,9 @@ begin
 														down_s,
 														clk,
 														reset_cnt_s,
-														counter
+														counter,
+														max_s,
+														min_s
 														);
 																			
 	ram: ram_8x16    					port map(counter,
@@ -114,8 +125,9 @@ begin
 														write_enable_s,
 														clk,
 														reset);
-										
+							
+	pop_and_out_s  <= not(min_s) and pop;
+	push_and_out_s <= not(max_s) and push;
 	
-
 end Behavioral;
 
