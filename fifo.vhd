@@ -203,19 +203,19 @@ architecture Behavioral of fifo is
 					next_state <= st1_start;
             end if;
          when st2_idle =>  
-            if push_in = '1' and (counter_in < "111")    then
+            if push_in = '1' and (to_integer(unsigned(counter_in)) < 7)    then
                next_state <= st3_push;
-            elsif push_in = '1' and (counter_in = "111") then
+            elsif push_in = '1' and (to_integer(unsigned(counter_in)) = 7) then
                next_state <= st4_push_full;
-            elsif pop_in = '1' and (counter_in > "000")  then
+            elsif pop_in = '1' and (to_integer(unsigned(counter_in)) > 0)  then
                next_state <= st5_pop;
-            elsif pop_in = '1' and (counter_in = "000")  then
+            elsif pop_in = '1' and (to_integer(unsigned(counter_in)) = 0)  then
                next_state <= st6_pop_empty;
 				else
 					next_state <= st2_idle;
             end if;
          when st3_push => 
-					next_state <= st2_idle;
+					next_state <= st7_add_add;
 				
 			when st4_push_full =>
 					next_state <= st10_set_full;
