@@ -19,8 +19,7 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.Numeric_Std.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -41,26 +40,29 @@ entity ram_8x16 is
 end ram_8x16;
 
 architecture Behavioral of ram_8x16 is
-	type ram_type is array (0 to 7) of STD_LOGIC_VECTOR(7 DOWNTO 0);
-	signal memory : ram_type := (others => (others => '0'));
+   type ram_type is array (0 to (2**address_i'length)-1) of std_logic_vector(data_i'range);
+   signal ram : ram_type := (others => (others => '0'));
+   signal read_address : std_logic_vector(address_i'range):= (others => '0');
+
 begin
-	
-	process (clk)
-	begin  
-		if (clk'event and clk = '1') then
-			if reset = '1' then
-				data_o <= "00000000";
-			else
-				if write_enable = '1' then
-					memory(conv_integer(address_i)) <= data_i;
-					data_o <= memory(conv_integer(address_i));
-				else 
-					memory(conv_integer(address_i)) <= memory(conv_integer(address_i));
-					data_o <= memory(conv_integer(address_i));	
-				end if;
+
+  RamProc: process(clk) is
+
+  begin
+    if rising_edge(clk) then
+		if reset = '1' then
+			read_address <= (others => '0');
+		else
+			if write_enable = '1' then
+			  ram(to_integer(unsigned(address_i))) <= data_i;
 			end if;
+			read_address <= address_i;
 		end if;
-	end process;
+    end if;
+  end process RamProc;
+
+  data_o <= ram(to_integer(unsigned(read_address)));
+
 
 
 end Behavioral;
