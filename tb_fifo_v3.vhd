@@ -41,12 +41,13 @@ ARCHITECTURE behavior OF tb_fifo_v3 IS
  
     COMPONENT top_fifo_v2
     PORT(
-         clk : IN  std_logic;
-         push : IN  std_logic;
-         pop : IN  std_logic;
-         init : IN  std_logic;
-         reset : IN  std_logic;
-         data_in : IN  std_logic_vector(7 downto 0);
+         clk      : IN  std_logic;
+			clk_fsm  : IN  std_logic;
+         push     : IN  std_logic;
+         pop      : IN  std_logic;
+         init     : IN  std_logic;
+         reset    : IN  std_logic;
+         data_in  : IN  std_logic_vector(7 downto 0);
          data_out : OUT  std_logic_vector(7 downto 0)
         );
     END COMPONENT;
@@ -70,7 +71,8 @@ BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: top_fifo_v2 PORT MAP (
-          clk => clk,
+          clk_fsm => clk,
+			 clk => clk,
           push => push,
           pop => pop,
           init => init,
@@ -103,7 +105,7 @@ BEGIN
    begin		
 		push <= '1';
 		pop <= '0';
-		wait for 23 ns;
+		wait for 42 ns;
 		push <= '0';
 		pop <= '0';
 		wait for 23 ns;
@@ -121,9 +123,9 @@ BEGIN
 	data_in_proc: process
 	begin
 		data_in <= "00000001";
-		wait for 19 ns;
+		wait for 49 ns;
 		data_in <= "00000010";
-		wait for 23 ns;
+		wait for 65 ns;
 		data_in <= "00000000";
 		wait;
 	end process;
