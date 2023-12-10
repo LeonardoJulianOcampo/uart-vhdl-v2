@@ -30,11 +30,13 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity updown_counter is
-    Port ( up    : in  STD_LOGIC;
-           down  : in  STD_LOGIC;
-           clk   : in  STD_LOGIC;
-           reset : in  STD_LOGIC;
-           count : out  STD_LOGIC_VECTOR (2 downto 0));
+    Port ( up    : in   STD_LOGIC;
+           down  : in   STD_LOGIC;
+           clk   : in   STD_LOGIC;
+           reset : in   STD_LOGIC;
+           count : out  STD_LOGIC_VECTOR (2 downto 0);
+			  max   : out  STD_LOGIC;
+			  min   : out  STD_LOGIC);
 end updown_counter;
 
 architecture Behavioral of updown_counter is
@@ -45,22 +47,34 @@ begin
 		if (clk'event and clk = '1') then
 			if reset = '1' then
 				counter <= 0;
+				min <= '0';
+				max <= '0';
 				count   <= "000";
 			else
 				if up = '1' and counter < 7 then
 					counter <= counter + 1;
 					count <= std_logic_vector(to_unsigned(counter,3));
+					min <= '0';
+					max <= '0';					
 				elsif up = '1' and counter = 7 then 
 					counter <= counter;
+					min <= '0';
+					max <= '1';
 					count <= std_logic_vector(to_unsigned(counter,3));
 				elsif down = '1' and counter > 0 then
 					counter <= counter - 1;
+					min <= '0';
+					max <= '0';
 					count <= std_logic_vector(to_unsigned(counter,3));
 				elsif down = '1' and counter = 0 then
 					counter <= counter;
+					min <= '1';
+					max <= '0';
 					count <= std_logic_vector(to_unsigned(counter,3));
 				else
 					counter <= counter;
+					min <= '0';
+					max <= '0';					
 					count <= std_logic_vector(to_unsigned(counter,3));
 				end if;
 			end if;
