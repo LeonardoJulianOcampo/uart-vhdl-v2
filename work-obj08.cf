@@ -1,0 +1,4 @@
+v 4
+file . "fifo.vhd" "ea3eb3f9cf8433f4afb9ee1313e93c828287083a" "20231210002447.295":
+  entity fifo at 20( 477) + 0 on 11;
+  architecture behavioral of fifo at 48( 1393) + 0 on 12;
